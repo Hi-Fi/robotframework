@@ -41,9 +41,10 @@ jobs:
           java-version: ${{ matrix.java }}
           architecture: 'x64'
 
-      - name: Install wget
+      - name: Install wget and lftp
         run: |
           choco install wget -y --no-progress
+          choco install lftp -y --no-progress
         if: runner.os == 'Windows'
 
       - name: Setup Jython ${{ matrix.jython-version }}
@@ -51,8 +52,8 @@ jobs:
           wget -nv "http://search.maven.org/remotecontent?filepath=org/python/jython-installer/${{ matrix.jython-version }}/jython-installer-${{ matrix.jython-version }}.jar" -O jytinst.jar
           java -jar jytinst.jar -s -d ${{ matrix.jython_dir }}
 
-      - name: Install XVFB
-        run: sudo apt-get -y -q install xvfb
+      - name: Install XVFB and lftp
+        run: sudo apt-get -y -q install xvfb lftp
         if: contains(matrix.os, 'ubuntu')
 
       - name: Run acceptance tests
@@ -78,14 +79,8 @@ jobs:
           name: at-results-jython-${{ matrix.jython-version }}-${{ matrix.os }}-java${{ matrix.java }}
           path: atest/results
         if: always() && job.status == 'failure'
-      - name: FTP-Deploy-Action
-        uses: SamKirkland/FTP-Deploy-Action@9c4e4646b8b71d9ff86cfb1a44395ce36bf5ae56
-        env:
-          FTP_SERVER: ftpupload.net
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          LOCAL_DIR: atest/results
-          REMOTE_DIR: htdocs/${{ github.sha }}/at-results-jython-${{ matrix.jython-version }}-${{ matrix.os }}-java${{ matrix.java }}
+      - name: Upload results
+        run: lftp ftp://ftpupload.net:21 -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} -e "set ftp:ssl-allow no; mirror -R atest/results htdocs/${{ github.sha }}/at-results-jython-${{ matrix.jython-version }}-${{ matrix.os }}-java${{ matrix.java }}; quit"
         if: always() && job.status == 'failure'
       - run: echo "Test results at http://rf-test-reports.epizy.com/${{ github.sha }}/at-results-jython-${{ matrix.jython-version }}-${{ matrix.os }}-java${{ matrix.java }}"
         if: always() && job.status == 'failure'
