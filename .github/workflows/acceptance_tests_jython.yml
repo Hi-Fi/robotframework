@@ -85,7 +85,7 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           LOCAL_DIR: atest/results
-          REMOTE_DIR: ${{ github.sha }}/at-results-jython-${{ matrix.jython-version }}-${{ matrix.os }}-java${{ matrix.java }}
+          REMOTE_DIR: htdocs/${{ github.sha }}/at-results-jython-${{ matrix.jython-version }}-${{ matrix.os }}-java${{ matrix.java }}
         if: always() && job.status == 'failure'
       - run: echo "Test results at http://rf-test-reports.epizy.com/${{ github.sha }}/at-results-jython-${{ matrix.jython-version }}-${{ matrix.os }}-java${{ matrix.java }}"
         if: always() && job.status == 'failure'
