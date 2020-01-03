@@ -89,7 +89,7 @@ jobs:
           repository: ${{ github.repository }}
           sha: ${{ github.sha }}
           state: "failure"
-          target_url: "http://rf-test-reports.epizy.com/test.php?${{ github.sha }}"
+          target_url: "http://rf-test-reports.epizy.com/test.php?commit_sha=${{ github.sha }}"
           description: "Test run failed, see report for more information"
           context: "ci/gh-actions"
         env:
